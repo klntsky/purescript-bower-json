@@ -20,19 +20,9 @@ import Data.Newtype (class Newtype, unwrap)
 import Data.Tuple (Tuple(..))
 import Foreign.Object as Object
 
-newtype VersionRange = VersionRange String
-
-derive instance newtypeVersionRange :: Newtype VersionRange _
-derive instance eqVersionRange :: Eq VersionRange
-derive instance genericVersionRange :: Generic VersionRange _
-instance showVersionRange :: Show VersionRange where
-  show = genericShow
-derive newtype instance decodeJsonVersionRange :: DecodeJson VersionRange
-derive newtype instance encodeJsonVersionRange :: EncodeJson VersionRange
-
 newtype Dependencies =
   Dependencies (Array { packageName :: String
-                      , versionRange :: VersionRange
+                      , versionRange :: String
                       })
 
 derive instance newtypeDependencies :: Newtype Dependencies _
@@ -55,19 +45,9 @@ instance encodeJsonDependencies :: EncodeJson Dependencies where
     map (\({ packageName, versionRange }) -> Tuple packageName versionRange) >>>
     tuplesToObjectJson
 
-newtype Version = Version String
-
-derive instance newtypeVersion :: Newtype Version _
-derive instance eqVersion :: Eq Version
-derive instance genericVersion :: Generic Version _
-instance showVersion :: Show Version where
-  show = genericShow
-derive newtype instance decodeJsonVersion :: DecodeJson Version
-derive newtype instance encodeJsonVersion :: EncodeJson Version
-
 newtype Resolutions =
   Resolutions (Array { packageName :: String
-                     , version :: Version
+                     , version :: String
                      })
 
 derive instance newtypeResolution :: Newtype Resolutions _
@@ -89,31 +69,6 @@ instance encodeJsonResolutions :: EncodeJson Resolutions where
     unwrap >>>
     map (\({ packageName, version }) -> Tuple packageName version) >>>
     tuplesToObjectJson
-
-newtype Repository =
-  Repository
-  { url :: String
-  , type :: String
-  }
-
-derive instance newtypeRepository :: Newtype Repository _
-derive instance eqRepository :: Eq Repository
-derive instance genericRepository :: Generic Repository _
-instance showRepository :: Show Repository where
-  show = genericShow
-
-instance decodeJsonRepository :: DecodeJson Repository where
-  decodeJson json = do
-    x     <- decodeJson json
-    url   <- x .: "url"
-    type_ <- x .: "type"
-    pure $ Repository { type: type_, url }
-
-instance encodeJsonRepository :: EncodeJson Repository where
-  encodeJson (Repository { url, type: type_ }) =
-    "type" := type_ ~>
-    "url"  := url   ~>
-    jsonEmptyObject
 
 data ModuleType
   = Globals
@@ -204,7 +159,9 @@ newtype PackageMeta = PackageMeta
   , keywords        :: Maybe (Array String)
   , authors         :: Maybe (Array Author)
   , homepage        :: Maybe String
-  , repository      :: Maybe Repository
+  , repository      :: Maybe { url :: String
+                             , type :: String
+                             }
   , dependencies    :: Dependencies
   , devDependencies :: Dependencies
   , resolutions     :: Maybe Resolutions

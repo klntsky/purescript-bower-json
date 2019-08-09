@@ -7,12 +7,11 @@ import Data.Argonaut.Encode (encodeJson)
 import Data.Argonaut.Parser (jsonParser)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
-import Data.Newtype (wrap)
 import Effect (Effect)
 import Test.Unit (suite, test)
 import Test.Unit.Assert as Assert
 import Test.Unit.Main (runTest)
-import Web.Bower.PackageMeta (Author(..), Dependencies(..), ModuleType(..), PackageMeta(..), Repository(..), Resolutions(..), VersionRange(..))
+import Web.Bower.PackageMeta (Author(..), Dependencies(..), ModuleType(..), PackageMeta(..), Resolutions(..))
 
 bower1 :: String
 bower1 = """
@@ -62,10 +61,9 @@ bower1Data :: PackageMeta
 bower1Data =
   PackageMeta { name: "purescript-search-trie"
               , license: Just [ "BSD-3-Clause" ]
-              , repository: Just $
-                Repository { type: "git"
-                           , url: "git://github.com/klntsky/purescript-search-trie.git"
-                           }
+              , repository: Just  { type: "git"
+                                  , url: "git://github.com/klntsky/purescript-search-trie.git"
+                                  }
               , description: Just "some description"
               , main: Just [ "js/motion.js"
                            , "sass/motion.scss"
@@ -89,22 +87,22 @@ bower1Data =
                               ]
               , homepage: Just "homepage"
               , dependencies: Dependencies [
-                { packageName: "purescript-prelude", versionRange: wrap "^4.0.0" },
-                { packageName: "purescript-arrays", versionRange: wrap "^5.0.0" },
-                { packageName: "purescript-ordered-collections", versionRange: wrap "^1.0.0" },
-                { packageName: "purescript-lists", versionRange: wrap "^5.2.0" },
-                { packageName: "purescript-foldable-traversable", versionRange: wrap "^4.0.0" },
-                { packageName: "purescript-bifunctors", versionRange: wrap "^4.0.0" }
+                { packageName: "purescript-prelude", versionRange: "^4.0.0" },
+                { packageName: "purescript-arrays", versionRange: "^5.0.0" },
+                { packageName: "purescript-ordered-collections", versionRange: "^1.0.0" },
+                { packageName: "purescript-lists", versionRange: "^5.2.0" },
+                { packageName: "purescript-foldable-traversable", versionRange: "^4.0.0" },
+                { packageName: "purescript-bifunctors", versionRange: "^4.0.0" }
                 ]
               , devDependencies: Dependencies [
-                { packageName: "purescript-assert", versionRange: wrap "^4.1.0" },
-                { packageName: "purescript-psci-support", versionRange: wrap "^4.0.0" },
-                { packageName: "purescript-strings", versionRange: wrap "^4.0.0" },
-                { packageName: "purescript-effect", versionRange: wrap "^2.0.0" }
+                { packageName: "purescript-assert", versionRange: "^4.1.0" },
+                { packageName: "purescript-psci-support", versionRange: "^4.0.0" },
+                { packageName: "purescript-strings", versionRange: "^4.0.0" },
+                { packageName: "purescript-effect", versionRange: "^2.0.0" }
                 ]
               , resolutions: Just $ Resolutions
                 [ { packageName: "angular"
-                  , version: wrap "1.3.0-beta.16"
+                  , version: "1.3.0-beta.16"
                   }
                 ]
               , private: Nothing
@@ -114,12 +112,6 @@ main :: Effect Unit
 main = runTest do
   suite "decoding" do
 
-    suite "VersionRange" do
-      test "decodeJson" do
-        let expected = Right $ VersionRange "v0.0.1"
-            actual = parseDecode "\"v0.0.1\""
-        Assert.equal expected actual
-
     suite "Dependencies" do
 
       test "decodeJson" do
@@ -128,23 +120,14 @@ main = runTest do
                      { "purescript-foo": "^0.0.1" }
                      """
             expected = Right $ Dependencies [ { packageName: "purescript-foo"
-                                              , versionRange: wrap "^0.0.1" }
+                                              , versionRange: "^0.0.1" }
                                             ]
         Assert.equal expected actual
 
       test "encodeJson" do
-        let deps = Dependencies [ { packageName: "foo", versionRange: wrap "v0.0.1" } ]
+        let deps = Dependencies [ { packageName: "foo", versionRange: "v0.0.1" } ]
             actual = decodeJson $ encodeJson deps
             expected = Right deps
-        Assert.equal expected actual
-
-
-    suite "Repository" do
-
-      test "encodeJson" do
-        let repo = Repository { url: "url", type: "type" }
-            actual = decodeJson $ encodeJson repo
-            expected = Right repo
         Assert.equal expected actual
 
     suite "PackageMeta" do
