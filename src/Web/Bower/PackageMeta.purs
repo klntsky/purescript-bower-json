@@ -8,13 +8,15 @@ module Web.Bower.PackageMeta where
 import Prelude
 
 import Control.Alternative ((<|>))
-import Data.Argonaut.Core (Json, caseJsonString)
+import Data.Argonaut.Core (Json, caseJsonString, fromString, jsonEmptyObject)
 import Data.Argonaut.Decode (class DecodeJson, decodeJson, (.:), (.:?))
+import Data.Argonaut.Encode (class EncodeJson, encodeJson, (:=), (:=?), (~>), (~>?))
 import Data.Either (Either(..))
+import Data.Foldable (foldr)
 import Data.Generic.Rep (class Generic)
 import Data.Generic.Rep.Show (genericShow)
 import Data.Maybe (Maybe(..))
-import Data.Newtype (class Newtype)
+import Data.Newtype (class Newtype, unwrap)
 import Data.Tuple (Tuple(..))
 import Foreign.Object as Object
 
@@ -26,6 +28,7 @@ derive instance genericVersionRange :: Generic VersionRange _
 instance showVersionRange :: Show VersionRange where
   show = genericShow
 derive newtype instance decodeJsonVersionRange :: DecodeJson VersionRange
+derive newtype instance encodeJsonVersionRange :: EncodeJson VersionRange
 
 newtype Dependencies =
   Dependencies (Array { packageName :: String
@@ -46,6 +49,12 @@ instance decodeJsonDependencies :: DecodeJson Dependencies where
         Object.toUnfoldable obj <#>
         \(Tuple packageName versionRange) -> { packageName, versionRange }
 
+instance encodeJsonDependencies :: EncodeJson Dependencies where
+  encodeJson =
+    unwrap >>>
+    map (\({ packageName, versionRange }) -> Tuple packageName versionRange) >>>
+    tuplesToObjectJson
+
 newtype Version = Version String
 
 derive instance newtypeVersion :: Newtype Version _
@@ -54,6 +63,7 @@ derive instance genericVersion :: Generic Version _
 instance showVersion :: Show Version where
   show = genericShow
 derive newtype instance decodeJsonVersion :: DecodeJson Version
+derive newtype instance encodeJsonVersion :: EncodeJson Version
 
 newtype Resolutions =
   Resolutions (Array { packageName :: String
@@ -74,6 +84,12 @@ instance decodeJsonResolution :: DecodeJson Resolutions where
         Object.toUnfoldable obj <#>
         \(Tuple packageName version) -> { packageName, version }
 
+instance encodeJsonResolutions :: EncodeJson Resolutions where
+  encodeJson =
+    unwrap >>>
+    map (\({ packageName, version }) -> Tuple packageName version) >>>
+    tuplesToObjectJson
+
 newtype Repository =
   Repository
   { url :: String
@@ -92,6 +108,12 @@ instance decodeJsonRepository :: DecodeJson Repository where
     url   <- x .: "url"
     type_ <- x .: "type"
     pure $ Repository { type: type_, url }
+
+instance encodeJsonRepository :: EncodeJson Repository where
+  encodeJson (Repository { url, type: type_ }) =
+    "type" := type_ ~>
+    "url"  := url   ~>
+    jsonEmptyObject
 
 data ModuleType
   = Globals
@@ -118,6 +140,15 @@ instance decodeJsonModuleType :: DecodeJson ModuleType where
     json
     where
       err value = Left $ "Incorrect module format: " <> value
+
+instance encodeJsonModuleType :: EncodeJson ModuleType where
+  encodeJson value =
+    fromString case value of
+      Globals -> "globals"
+      AMD -> "amd"
+      Node -> "node"
+      ES6 -> "es6"
+      YUI -> "yui"
 
 -- | If an author is specified as a `String`, e.g.:
 -- |
@@ -156,6 +187,12 @@ instance decodeJsonAuthor :: DecodeJson Author where
         pure $ Author { name, email, homepage })
     (\str -> pure $ Author { name: Just str, email: Nothing, homepage: Nothing })
     json
+
+instance encodeJsonAuthor :: EncodeJson Author where
+  encodeJson (Author { name, email, homepage }) =
+    "name" :=? name ~>?
+    "email" :=? email ~>?
+    "homepage" :=? homepage
 
 newtype PackageMeta = PackageMeta
   { name            :: String
@@ -215,6 +252,38 @@ instance decodeJsonPackageMeta :: DecodeJson PackageMeta where
                        , homepage
                        }
 
+
+instance encodeJsonPackageMeta :: EncodeJson PackageMeta where
+  encodeJson (PackageMeta { name
+                          , description
+                          , main
+                          , moduleType
+                          , license
+                          , ignore
+                          , keywords
+                          , resolutions
+                          , private
+                          , dependencies
+                          , devDependencies
+                          , repository
+                          , authors
+                          , homepage
+                          }) =
+    "name" := name ~>
+    "description" :=? description ~>?
+    "main" :=? main ~>?
+    "moduleType" :=? moduleType ~>?
+    "license" :=? license ~>?
+    "ignore" :=? ignore ~>?
+    "keywords" :=? keywords ~>?
+    "resolutions" :=? resolutions ~>?
+    "private" :=? private ~>?
+    "dependencies" := dependencies ~>
+    "devDependencies" := devDependencies ~>
+    "repository" :=? repository ~>?
+    "authors" :=? authors ~>?
+    "homepage" :=? homepage
+
 -- | Decode a *recommended* field that may contain a single value
 -- | or an array of values.
 maybeMany
@@ -234,3 +303,7 @@ multiple
   -> Either String (Array a)
 multiple json =
   (pure <$> decodeJson json) <|> decodeJson json
+
+tuplesToObjectJson :: forall b. EncodeJson b => Array (Tuple String b) -> Json
+tuplesToObjectJson =
+  foldr (\(Tuple a b) obj -> Tuple a (encodeJson b) ~> obj) jsonEmptyObject
