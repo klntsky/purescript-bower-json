@@ -1,5 +1,10 @@
 {
   "name": "purescript-bower-json",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/klntsky/purescript-bower-json.git"
+  },
   "ignore": [
     "**/.*",
     "node_modules",
