@@ -57,6 +57,14 @@ bower1 = """
 }
 """
 
+bower2 :: String
+bower2 = """
+{
+  "name": "purescript-search-trie"
+}
+"""
+
+
 bower1Data :: BowerJson
 bower1Data =
   BowerJson { name: "purescript-search-trie"
@@ -86,7 +94,7 @@ bower1Data =
                                      }
                             ]
             , homepage: Just "homepage"
-            , dependencies: Dependencies [
+            , dependencies: Just $ Dependencies [
               { packageName: "purescript-prelude", versionRange: "^4.0.0" },
               { packageName: "purescript-arrays", versionRange: "^5.0.0" },
               { packageName: "purescript-ordered-collections", versionRange: "^1.0.0" },
@@ -94,7 +102,7 @@ bower1Data =
               { packageName: "purescript-foldable-traversable", versionRange: "^4.0.0" },
               { packageName: "purescript-bifunctors", versionRange: "^4.0.0" }
               ]
-            , devDependencies: Dependencies [
+            , devDependencies: Just $ Dependencies [
               { packageName: "purescript-assert", versionRange: "^4.1.0" },
               { packageName: "purescript-psci-support", versionRange: "^4.0.0" },
               { packageName: "purescript-strings", versionRange: "^4.0.0" },
@@ -107,6 +115,26 @@ bower1Data =
               ]
             , private: Nothing
             }
+
+bower2Data :: BowerJson
+bower2Data =
+  BowerJson { name: "purescript-search-trie"
+            , license: Nothing
+            , repository: Nothing
+            , description: Nothing
+            , main: Nothing
+            , moduleType: Nothing
+            , ignore: Nothing
+            , keywords: Nothing
+            , authors: Nothing
+            , homepage: Nothing
+            , dependencies: Nothing
+            , devDependencies: Nothing
+            , resolutions: Nothing
+            , private: Nothing
+            }
+
+
 
 packageMeta1 :: PackageMeta
 packageMeta1 = PackageMeta { name: "..."
@@ -125,6 +153,26 @@ packageMeta1 = PackageMeta { name: "..."
                            , homepage: Nothing
                            }
 
+
+packageMeta2 :: PackageMeta
+packageMeta2 =
+  PackageMeta { name: "purescript-search-trie"
+              , description: Nothing
+              , main: []
+              , moduleType: []
+              , license: []
+              , ignore: []
+              , keywords: []
+              , resolutions: mempty
+              , private: false
+              , dependencies: mempty
+              , devDependencies: mempty
+              , repository: Nothing
+              , authors: []
+              , homepage: Nothing
+              }
+
+
 bowerJson2 :: BowerJson
 bowerJson2 =
   BowerJson { name: "..."
@@ -142,6 +190,8 @@ bowerJson2 =
             , resolutions: Nothing
             , private: Nothing
             }
+
+
 
 main :: Effect Unit
 main = runTest do
@@ -189,15 +239,27 @@ main = runTest do
             expected = Right bower1Data
         Assert.equal expected actual
 
+      test "decodeJson (optional fields)" do
+        let actual = parseDecode bower2
+            expected = Right bower2Data
+        Assert.equal expected actual
+
+
       test "encodeJson" do
         let actual = decodeJson $ encodeJson bower1
             expected = Right bower1
         Assert.equal expected actual
 
     suite "PackageMeta" do
+
       test "decodeJson" do
         let actual = decodeJson $ encodeJson packageMeta1
             expected = Right bowerJson2
+        Assert.equal expected actual
+
+      test "decodeJson (optional fields)" do
+        let actual = parseDecode bower2
+            expected = Right packageMeta2
         Assert.equal expected actual
 
 parseDecode :: forall a. DecodeJson a => String -> Either String a

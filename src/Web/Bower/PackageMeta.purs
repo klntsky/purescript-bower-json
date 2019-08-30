@@ -96,8 +96,8 @@ readPackageMeta (BowerJson { name
               , keywords: fold keywords
               , resolutions: fold resolutions
               , private: fromMaybe false private
-              , dependencies: dependencies
-              , devDependencies: devDependencies
+              , dependencies: fold dependencies
+              , devDependencies: fold devDependencies
               , repository: repository
               , authors: fold authors
               , homepage: homepage
@@ -127,8 +127,8 @@ writePackageMeta (PackageMeta { name
             , keywords: unfold keywords
             , resolutions: unfold resolutions
             , private: if private == false then Nothing else Just true
-            , dependencies: dependencies
-            , devDependencies: devDependencies
+            , dependencies: unfold dependencies
+            , devDependencies: unfold devDependencies
             , repository: repository
             , authors: unfold authors
             , homepage: homepage
@@ -157,8 +157,8 @@ newtype BowerJson = BowerJson
   , repository      :: Maybe { url :: String
                              , type :: String
                              }
-  , dependencies    :: Dependencies
-  , devDependencies :: Dependencies
+  , dependencies    :: Maybe Dependencies
+  , devDependencies :: Maybe Dependencies
   , resolutions     :: Maybe Resolutions
   , private         :: Maybe Boolean
   }
@@ -180,8 +180,8 @@ instance decodeJsonBowerJson :: DecodeJson BowerJson where
     license         <- maybeMany =<< x .:? "license"
     ignore          <-               x .:? "ignore"
     keywords        <-               x .:? "keywords"
-    dependencies    <-               x .:  "dependencies"
-    devDependencies <-               x .:  "devDependencies"
+    dependencies    <-               x .:? "dependencies"
+    devDependencies <-               x .:? "devDependencies"
     resolutions     <-               x .:? "resolutions"
     private         <-               x .:? "private"
     repository      <-               x .:? "repository"
@@ -221,20 +221,20 @@ instance encodeJsonBowerJson :: EncodeJson BowerJson where
                         , authors
                         , homepage
                         }) =
-    "name" := name ~>
-    "description" :=? description ~>?
-    "main" :=? main ~>?
-    "moduleType" :=? moduleType ~>?
-    "license" :=? license ~>?
-    "ignore" :=? ignore ~>?
-    "keywords" :=? keywords ~>?
-    "resolutions" :=? resolutions ~>?
-    "private" :=? private ~>?
-    "dependencies" := dependencies ~>
-    "devDependencies" := devDependencies ~>
-    "repository" :=? repository ~>?
-    "authors" :=? authors ~>?
-    "homepage" :=? homepage
+    "name"            := name ~>
+    "description"     :=? description ~>?
+    "main"            :=? main ~>?
+    "moduleType"      :=? moduleType ~>?
+    "license"         :=? license ~>?
+    "ignore"          :=? ignore ~>?
+    "keywords"        :=? keywords ~>?
+    "resolutions"     :=? resolutions ~>?
+    "private"         :=? private ~>?
+    "dependencies"    :=? dependencies ~>?
+    "devDependencies" :=? devDependencies ~>?
+    "repository"      :=? repository ~>?
+    "authors"         :=? authors ~>?
+    "homepage"        :=? homepage
 
 newtype Dependencies =
   Dependencies (Array { packageName :: String
