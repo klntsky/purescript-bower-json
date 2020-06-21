@@ -2,9 +2,8 @@ module Test.Main where
 
 import Prelude
 
-import Data.Argonaut.Decode (class DecodeJson, decodeJson)
+import Data.Argonaut.Decode (class DecodeJson, JsonDecodeError, decodeJson, parseJson)
 import Data.Argonaut.Encode (encodeJson)
-import Data.Argonaut.Parser (jsonParser)
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
 import Effect (Effect)
@@ -262,5 +261,5 @@ main = runTest do
             expected = Right packageMeta2
         Assert.equal expected actual
 
-parseDecode :: forall a. DecodeJson a => String -> Either String a
-parseDecode = decodeJson <=< jsonParser
+parseDecode :: forall a. DecodeJson a => String -> Either JsonDecodeError a
+parseDecode = decodeJson <=< parseJson
