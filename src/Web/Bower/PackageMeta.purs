@@ -21,7 +21,7 @@ import Prelude
 
 import Control.Alternative ((<|>))
 import Data.Argonaut.Core (Json, caseJsonString, fromString, jsonEmptyObject)
-import Data.Argonaut.Decode (class DecodeJson, decodeJson, (.:), (.:?))
+import Data.Argonaut.Decode (class DecodeJson, JsonDecodeError(..), decodeJson, (.:), (.:?))
 import Data.Argonaut.Encode (class EncodeJson, encodeJson, (:=), (:=?), (~>), (~>?))
 import Data.Either (Either(..))
 import Data.Foldable (fold, foldr)
@@ -304,17 +304,15 @@ instance showModuleType :: Show ModuleType where
 
 instance decodeJsonModuleType :: DecodeJson ModuleType where
   decodeJson json =
-    caseJsonString (err "Not a string")
+    caseJsonString (Left (Named "Incorrect module format: " (TypeMismatch "String")))
     (\str -> case str of
         "globals" -> Right Globals
         "amd"     -> Right AMD
         "node"    -> Right Node
         "es6"     -> Right ES6
         "yui"     -> Right YUI
-        value     -> err value)
+        value     -> Left (Named "Incorrect module format: " (UnexpectedValue (fromString value))))
     json
-    where
-      err value = Left $ "Incorrect module format: " <> value
 
 instance encodeJsonModuleType :: EncodeJson ModuleType where
   encodeJson value =
@@ -375,7 +373,7 @@ maybeMany
   :: forall a
   .  DecodeJson a
   => Maybe Json
-  -> Either String (Maybe (Array a))
+  -> Either JsonDecodeError (Maybe (Array a))
 maybeMany = \x -> case x of
                 Just value -> Just <$> multiple value
                 Nothing -> Right Nothing
@@ -385,7 +383,7 @@ multiple
   :: forall a
   .  DecodeJson a
   => Json
-  -> Either String (Array a)
+  -> Either JsonDecodeError (Array a)
 multiple json =
   (pure <$> decodeJson json) <|> decodeJson json
 

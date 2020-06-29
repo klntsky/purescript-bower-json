@@ -17,7 +17,7 @@
     "purescript-maybe": "^4.0.0",
     "purescript-generics-rep": "^6.1.0",
     "purescript-foreign-object": "^2.0.0",
-    "purescript-argonaut-codecs": "^6.0.0",
+    "purescript-argonaut-codecs": "^7.0.0",
     "purescript-either": "^4.1.0",
     "purescript-foldable-traversable": "^4.1.0",
     "purescript-newtype": "^3.0.0",
