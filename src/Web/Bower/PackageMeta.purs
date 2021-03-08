@@ -26,7 +26,7 @@ import Data.Argonaut.Encode (class EncodeJson, encodeJson, (:=), (:=?), (~>), (~
 import Data.Either (Either(..))
 import Data.Foldable (fold, foldr)
 import Data.Generic.Rep (class Generic)
-import Data.Generic.Rep.Show (genericShow)
+import Data.Show.Generic (genericShow)
 import Data.Maybe (Maybe(..), fromMaybe)
 import Data.Newtype (class Newtype, unwrap)
 import Data.Tuple (Tuple(..))

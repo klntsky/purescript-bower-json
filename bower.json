@@ -12,19 +12,18 @@
     "output"
   ],
   "dependencies": {
-    "purescript-prelude": "^4.1.0",
-    "purescript-arrays": "^5.3.0",
-    "purescript-maybe": "^4.0.0",
-    "purescript-generics-rep": "^6.1.0",
-    "purescript-foreign-object": "^2.0.0",
-    "purescript-argonaut-codecs": "^7.0.0",
-    "purescript-either": "^4.1.0",
-    "purescript-foldable-traversable": "^4.1.0",
-    "purescript-newtype": "^3.0.0",
-    "purescript-tuples": "^5.1.0"
+    "purescript-prelude": "^5.0.0",
+    "purescript-arrays": "^6.0.0",
+    "purescript-maybe": "^5.0.0",
+    "purescript-foreign-object": "^3.0.0",
+    "purescript-argonaut-codecs": "^8.0.0",
+    "purescript-either": "^5.0.0",
+    "purescript-foldable-traversable": "^5.0.0",
+    "purescript-newtype": "^4.0.0",
+    "purescript-tuples": "^6.0.0"
   },
   "devDependencies": {
-    "purescript-psci-support": "^4.0.0",
-    "purescript-test-unit": "^15.0.0"
+    "purescript-psci-support": "^5.0.0",
+    "purescript-test-unit": "^16.0.0"
   }
 }
